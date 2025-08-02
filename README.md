@@ -17,6 +17,14 @@ cd HCMUS-IntroAI-Hashiwokakero
 pip install -r requirements.txt
 ```
 
+## Run
+
+```bash
+python main.py
+or
+python3 main.py
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
