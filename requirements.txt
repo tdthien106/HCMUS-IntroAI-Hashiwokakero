@@ -1,0 +1,2 @@
+numpy>=1.21.0
+python-sat>=0.1.7.dev6
