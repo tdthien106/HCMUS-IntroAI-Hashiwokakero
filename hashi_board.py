@@ -103,6 +103,39 @@ class HashiBoard:
         })
         return True
     
+    def is_valid_position_for_bridge(self, start, end):
+        """Check if a bridge can be placed between two positions"""
+        if start == end:
+            return False
+            
+        # Must be horizontal or vertical
+        if start[0] != end[0] and start[1] != end[1]:
+            return False
+            
+        # Check if both positions are islands
+        if not (self.is_island(*start) and self.is_island(*end)):
+            return False
+            
+        # Check for intervening islands
+        if start[0] == end[0]:  # Horizontal
+            row = start[0]
+            for col in range(min(start[1], end[1]) + 1, max(start[1], end[1])):
+                if self.is_island(row, col):
+                    return False
+        else:  # Vertical
+            col = start[1]
+            for row in range(min(start[0], end[0]) + 1, max(start[0], end[0])):
+                if self.is_island(row, col):
+                    return False
+                    
+        return True
+    
+    def copy(self):
+        """Create a deep copy of the board"""
+        new_board = HashiBoard([row[:] for row in self.grid])
+        new_board.bridges = [bridge.copy() for bridge in self.bridges]
+        return new_board
+    
     def is_solved(self):
         # Check all islands have correct number of bridges
         island_bridges = {island: 0 for island in self.islands}
@@ -176,7 +209,7 @@ class HashiBoard:
             return output
     
     def is_valid_solution(self):
-        # Check all islands have correct number of bridges
+        # Kiểm tra số bridge cho từng đảo
         island_counts = {}
         for island in self.islands:
             island_counts[(island[0], island[1])] = 0
@@ -187,13 +220,19 @@ class HashiBoard:
             island_counts[start] += bridge['count']
             island_counts[end] += bridge['count']
 
+        # Kiểm tra đủ số bridge
         for island in self.islands:
             pos = (island[0], island[1])
             if island_counts.get(pos, 0) != island[2]:
+                #print(f"Island {pos} needs {island[2]} bridges but has {island_counts.get(pos, 0)}")  # Debug
                 return False
 
-        # Check all islands are connected
-        return self.is_fully_connected()
+        # Kiểm tra liên thông
+        if not self.is_fully_connected():
+            print("Islands are not fully connected")  # Debug
+            return False
+
+        return True
 
     def is_fully_connected(self):
         if not self.islands:
