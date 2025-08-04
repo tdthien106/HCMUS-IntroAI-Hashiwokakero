@@ -51,32 +51,37 @@ class CNFGenerator:
             self._add_exact_quantity_constraint(bridge_vars, demand)
 
     def _add_exact_quantity_constraint(self, vars_weights, k):
-        """Ràng buộc chính xác số bridges cho đảo"""
+        """Exactly k bridges: enumerate all valid assignments (small n)"""
         if not vars_weights:
             if k == 0:
                 return
             self.clauses.append([])  # Unsatisfiable
             return
 
-        # At-Least-K (ít nhất k bridges)
-        self._add_at_least_k(vars_weights, k)
-        
-        # At-Most-K (nhiều nhất k bridges)
-        self._add_at_most_k(vars_weights, k)
+        n = len(vars_weights)
+        # Generate all possible assignments (0/1 for each variable)
+        valid_assignments = []
+        for bits in product([0, 1], repeat=n):
+            total = sum(w * b for (v, w), b in zip(vars_weights, bits))
+            if total == k:
+                valid_assignments.append(bits)
 
-        # Bổ sung ràng buộc cho các đảo yêu cầu nhiều bridges
-        if k >= 2:
-            # Đảm bảo có ít nhất 1 bridge kép hoặc 2 bridge đơn
-            single_vars = [var for var, w in vars_weights if w == 1]
-            double_vars = [var for var, w in vars_weights if w == 2]
-            
-            if double_vars:
-                # Có thể chọn 1 bridge kép
-                self.clauses.append(double_vars)
-            if len(single_vars) >= 2:
-                # Hoặc chọn 2 bridge đơn
-                for v1, v2 in combinations(single_vars, 2):
-                    self.clauses.append([v1, v2])
+        if not valid_assignments:
+            self.clauses.append([])  # Unsatisfiable
+            return
+
+        # At least one valid assignment must be true (big OR)
+        clause = []
+        for bits in valid_assignments:
+            lits = []
+            for (v, _), b in zip(vars_weights, bits):
+                lits.append(v if b else -v)
+            clause.append(lits)
+        # Add as CNF (at least one valid assignment)
+        self.clauses.extend(clause)
+
+        # Optionally, for stronger pruning, add "at most one" valid assignment
+        # (not strictly necessary for correctness)
 
     def _add_at_least_k(self, vars_weights, k):
         """Sequential counter encoding cho ≥ k"""

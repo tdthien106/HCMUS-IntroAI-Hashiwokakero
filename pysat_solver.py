@@ -8,7 +8,7 @@ class PySatSolver:
     def __init__(self, board):
         self.board = board
         self.cnf_generator = CNFGenerator(board)
-        self.timeout = 0.7  # seconds
+        self.timeout = 10  # seconds
         
     def solve(self):
         try:
@@ -43,11 +43,9 @@ class PySatSolver:
             return False
         
     def _apply_solution(self, model, variables):
+        self.board.bridges = []  # Reset bridges before applying SAT solution
         assignments = {abs(var): var > 0 for var in model}
-        
-        # Thêm bridge kép trước
-        for (i,j,c), var in sorted(variables.items(), 
-                                 key=lambda x: (-x[0][2], x[0][0], x[0][1])):
+        for (i, j, c), var in sorted(variables.items(), key=lambda x: (-x[0][2], x[0][0], x[0][1])):
             if assignments.get(var, False):
                 self._add_bridge(i, j, c)
     
