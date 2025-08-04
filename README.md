@@ -20,8 +20,6 @@ pip install -r requirements.txt
 ## Run
 
 ```bash
-python main.py
-or
 python3 main.py
 ```
 
