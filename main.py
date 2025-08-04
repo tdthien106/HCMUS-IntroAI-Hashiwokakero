@@ -32,8 +32,7 @@ def solve_with_method(board, method):
     
     if method == 'pysat':
         solver = PySatSolver(board)
-        solved = solver.solve()
-        solution = board if solved else None
+        solution = solver.solve()
     elif method == 'astar':
         solver = AStarSolver(board)
         solution = solver.solve()
